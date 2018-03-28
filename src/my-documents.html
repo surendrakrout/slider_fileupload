@@ -1,0 +1,138 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-form/iron-form.html">
+
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<script src="https://cdn.vaadin.com/vaadin-elements/master/mock-http-request/lib/mock.js"></script>
+<link rel="import" href="../bower_components/vaadin-upload/vaadin-upload.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="my-documents">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+       paper-input{
+        max-width: 505px;
+        border: 1px solid #ccc;
+        display: block;
+        padding: 0px 5px 15px 5px;
+        margin: 5px;
+        border-radius: 4px;
+
+      }
+      iron-icon, div[suffix] {
+        color: hsl(0, 0%, 50%);
+        margin-right: 12px;
+      }
+      vaadin-upload{
+        max-width: 500px;
+        border: 1px solid #ccc !important;
+        padding: 10px;
+        margin: 5px;
+        border-radius: 4px;
+      }
+     
+       paper-button.indigo {
+      background-color: var(--paper-indigo-500);
+      color: white;
+    }
+    paper-toast{
+      position: absolute !important;
+      left: 100px !important;
+      top:100px !important;
+    }
+    </style>
+    <script>
+  function mockXhrGenerator(file) {
+    var xhr = new MockHttpRequest();
+    xhr.upload = {};
+    xhr.onsend = function() {
+      var total = file && file.size || 1024, done = 0;
+      function start() {
+        setTimeout(progress, 1000);
+      }
+      function progress() {
+        xhr.upload.onprogress({total: total, loaded: done});
+        if (done < total) {
+          setTimeout(progress, 200);
+          done = Math.min(total, done + 254000);
+        } else if (!file.abort) {
+          setTimeout(finish, 1000);
+        }
+      }
+      function finish() {
+        xhr.receive(200, '{"message":"OK"}');
+      }
+      start();
+    };
+    return xhr;
+  }
+  
+    // Monkey-patch vaadin-upload prototype to use MockHttpRequest
+    Object.getPrototypeOf(document.createElement('vaadin-upload'))._createXhr = mockXhrGenerator;
+
+</script>
+    <div class="card">
+      <paper-toast id="succtoast" text="Document uploaded Successfully"></paper-toast>
+      <iron-form id="fileupload">
+      <form method="post">
+      <div>
+      <label>Document Title:</label>
+      <paper-input float-label label="DocumentType" required auto-validate error-message="Document title is required"></paper-input>
+      <label>Upload:</label>
+        <vaadin-upload target="#"
+          method="POST"
+          accept=".pdf,.jpg"
+          headers="{'Accept': 'application/json'}"
+          timeout=15000 required auto-validate error-message="Atleast one file is required to upload">
+        <iron-icon slot="drop-label-icon" icon="description"></iron-icon>
+        <span slot="drop-label">Drop your documents here (Jpg,PDF files only)</span>
+      </vaadin-upload>
+      <p><paper-button raised class="indigo" on-tap="_validateDocuments">Validate Uploads</paper-button></p>
+      </div>
+      </form>
+      </iron-form>
+    </div>
+  </template>
+
+  <script>
+    class MyDocuments extends Polymer.Element {
+      static get is() { return 'my-documents'; }
+
+       ready(){
+        super.ready();
+      }
+      _validateDocuments(){
+        if(this.$.fileupload.validate()){
+          this.$.succtoast.open();
+           setTimeout(function(){
+            this.app = document.querySelector('my-app');
+            this.app.set('route.path', '/success');
+            //alert(location.pathname);
+          }, 1000);
+        }else{
+          console.log('Upload error')
+        }
+      }
+    }
+   
+    window.customElements.define(MyDocuments.is, MyDocuments);
+  </script>
+</dom-module>

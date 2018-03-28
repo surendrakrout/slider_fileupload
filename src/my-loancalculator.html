@@ -1,0 +1,77 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-slider/paper-slider.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+
+
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="my-loancalculator">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+      h3{
+        color:green;
+        font-size: 14px;
+        font-weight: normal;
+      }
+     
+     
+    </style>
+
+    <div class="card">
+      <label>Loan Amount:</label>
+      <paper-input float-label label="loanamount" required auto-validate error-message="Loan Amount is required" value="{{slideval}}">{{slideval}}</paper-input>
+      <paper-slider value="{{slideval}}"
+      max="2000000" step="50000"
+       id="loanamount"
+        on-change="_update"></paper-slider>
+      
+    </div>
+  </template>
+
+  <script>
+    class MyCalculator extends Polymer.Element {
+      static get is() { return 'my-loancalculator'; }
+        ready(){
+        super.ready();
+      }
+      static get properties() {
+        return {
+          slideval: {
+            type: Number,
+            value:100000
+          }
+        };
+      }
+      _update(e){
+        //debugger
+
+      //  var ratings = document.querySelector('#loanamount');
+       var ratings = this.shadowRoot.querySelector("#loanamount");
+        ratings.addEventListener('value-change', function() {
+       this.slideval = ratings.value;
+       });
+      }
+       // this.ratings = document.querySelector('#ratings');
+       // ratings.addEventListener('value-change', function() {
+       //   document.querySelector('#ratingsLabel').textContent = ratings.value;
+        //});
+  
+    }
+    window.customElements.define(MyCalculator.is, MyCalculator);
+  </script>
+</dom-module>
